@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v7.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:gravity="center"
+    app:cardCornerRadius="4dp"
+    android:clickable="true"
+    app:cardElevation="3dp"
+    app:cardUseCompatPadding="true"
+    android:focusable="true">
+    <TextView 
+        android:id="@+id/songTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="16sp"
+        android:padding="10dp"
+        android:color="@color/song_title"/>
+
+</android.support.v7.widget.CardView>
