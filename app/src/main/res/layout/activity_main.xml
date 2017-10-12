@@ -38,7 +38,19 @@
     </LinearLayout>
     
     <!-- Song Thumbnail Image -->
-
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_below="@+id/player_header_bg"
+        android:id="@+id/equalizer_layout"
+        >
+   <Spinner
+       android:layout_width="wrap_content"
+       android:layout_height="wrap_content"
+       android:id="@+id/spinner"
+       ></Spinner>
+    </LinearLayout>
     <!-- Player Footer -->
     <LinearLayout 
         android:id="@+id/player_footer_bg"

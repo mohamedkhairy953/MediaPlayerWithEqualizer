@@ -1,8 +1,12 @@
 package com.khairy.moham.equalizerfirst.contractor;
 
 
+import java.util.ArrayList;
+import java.util.HashMap;
+
 public class Utilities {
-	
+public static ArrayList<HashMap<String,String>> songList;
+
 	/**
 	 * Function to convert milliseconds time to
 	 * Timer Format
@@ -11,7 +15,6 @@ public class Utilities {
 	public String milliSecondsToTimer(long milliseconds){
 		String finalTimerString = "";
 		String secondsString = "";
-		
 		// Convert total duration into time
 		   int hours = (int)( milliseconds / (1000*60*60));
 		   int minutes = (int)(milliseconds % (1000*60*60)) / (1000*60);
