@@ -22,6 +22,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.khairy.moham.equalizerfirst.R;
+import com.khairy.moham.equalizerfirst.contractor.MyMediaPlayer;
 import com.khairy.moham.equalizerfirst.contractor.Utilities;
 import com.khairy.moham.equalizerfirst.databinding.ActivityMainBinding;
 import com.khairy.moham.equalizerfirst.presenter.main.Main_presenter;
@@ -37,12 +38,7 @@ import java.util.Random;
 
 public class MainActivity extends AppCompatActivity implements MediaPlayer.OnCompletionListener, SeekBar.OnSeekBarChangeListener, PlayerView {
     ActivityMainBinding binding;
-    MediaPlayer mediaPlayer;
-    private int seekForwardTime = 5000; // 5000 milliseconds
-    private int seekBackwardTime = 5000; // 5000 milliseconds
-    private int currentSongIndex = 0;
-    private boolean isShuffle = false;
-    private boolean isRepeat = false;
+    MyMediaPlayer mediaPlayer;
     Handler handler = new Handler();
     ArrayList<HashMap<String, String>> myList;
     Main_presenterImpl presenter;
@@ -53,11 +49,11 @@ public class MainActivity extends AppCompatActivity implements MediaPlayer.OnCom
         super.onCreate(savedInstanceState);
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main);
         presenter = new Main_presenterImpl(this);
-        mediaPlayer = new MediaPlayer();
-        mediaPlayer.setAudioSessionId(95);
+        mediaPlayer = MyMediaPlayer.getInstance();
+        mediaPlayer.setSessionId(95);
         presenter.loadSongs();
         setVolumeControlStream(AudioManager.STREAM_MUSIC);
-        mEqualizer = new Equalizer(AudioEffect.CONTENT_TYPE_VOICE, mediaPlayer.getAudioSessionId());
+        mEqualizer = new Equalizer(AudioEffect.CONTENT_TYPE_VOICE, mediaPlayer.getSessionId());
         mEqualizer.setEnabled(false);
         setupEqualizerView();
         binding.songProgressBar.setOnSeekBarChangeListener(this);
@@ -196,7 +192,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayer.OnCom
 //                set seekBar indicators according to selected preset
                 for (short i = 0; i < numberFrequencyBands; i++) {
                     short equalizerBandIndex = i;
-                    SeekBar seekBar =  findViewById(equalizerBandIndex);
+                    SeekBar seekBar = findViewById(equalizerBandIndex);
 //                    get current gain setting for this equalizer band
 //                    set the progress indicator of this seekBar to indicate the current gain value
                     seekBar.setProgress(mEqualizer
@@ -224,50 +220,39 @@ public class MainActivity extends AppCompatActivity implements MediaPlayer.OnCom
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == 100) {
-            currentSongIndex = data.getExtras().getInt("songIndex");
+           int currentSongIndex = data.getExtras().getInt("songIndex");
+           mediaPlayer.setCurrentSongIndex(currentSongIndex);
             // play selected song
-            playSong(currentSongIndex);
+            presenter.doPlaySong(currentSongIndex);
         }
 
     }
 
     public void onBtnPlay(View view) {
-        // check for already playing
-        if (mediaPlayer.isPlaying()) {
-            if (mediaPlayer != null) {
-                mediaPlayer.pause();
-                // Changing button image to play button
-                binding.btnPlay.setImageResource(R.drawable.btn_play);
-            }
-        } else {
-            // Resume song
-            if (mediaPlayer != null) {
-                mediaPlayer.start();
-                // Changing button image to pause button
-                binding.btnPlay.setImageResource(R.drawable.btn_pause);
-            }
-        }
+        presenter.playMedia();
     }
 
     @Override
     public void onCompletion(MediaPlayer mediaPlayer) {
-        if (isRepeat) {
+        MyMediaPlayer myMediaPlayer = MyMediaPlayer.getInstance();
+        if (myMediaPlayer.isRepeat()) {
             // repeat is on play same song again
-            playSong(currentSongIndex);
-        } else if (isShuffle) {
+            presenter.doPlaySong(myMediaPlayer.getCurrentSongIndex());
+        } else if (myMediaPlayer.isShuffle()) {
             // shuffle is on - play a random song
             Random rand = new Random();
-            currentSongIndex = rand.nextInt((myList.size() - 1) + 1);
-            playSong(currentSongIndex);
+            myMediaPlayer.setCurrentSongIndex(rand.nextInt((myList.size() - 1) + 1));
+            presenter.doPlaySong(myMediaPlayer.getCurrentSongIndex());
         } else {
             // no repeat or shuffle ON - play next song
-            if (currentSongIndex < (myList.size() - 1)) {
-                playSong(currentSongIndex + 1);
-                currentSongIndex = currentSongIndex + 1;
+            if (myMediaPlayer.getCurrentSongIndex() < (myList.size() - 1)) {
+                presenter.doPlaySong(myMediaPlayer.getCurrentSongIndex() + 1);
+                myMediaPlayer.setCurrentSongIndex(myMediaPlayer.getCurrentSongIndex() + 1);
             } else {
                 // play first song
-                playSong(0);
-                currentSongIndex = 0;
+                presenter.doPlaySong(0);
+                myMediaPlayer.setCurrentSongIndex(0);
+
             }
         }
     }
@@ -297,60 +282,38 @@ public class MainActivity extends AppCompatActivity implements MediaPlayer.OnCom
     }
 
     public void onBtnForward(View view) {
-        int currentPosition = mediaPlayer.getCurrentPosition();
-        if (currentPosition + seekForwardTime <= mediaPlayer.getDuration()) {
-            mediaPlayer.seekTo(currentPosition + seekForwardTime);
-        } else {
-            mediaPlayer.seekTo(mediaPlayer.getDuration());
-        }
+        int seekForwardTime = 5000;
+        presenter.doForward(seekForwardTime);
     }
 
     public void onBtnNext(View view) {
-        if (isShuffle) {
-            Random random = new Random();
-            currentSongIndex = random.nextInt((myList.size() - 1) + 1);
-            playSong(currentSongIndex);
-        } else {
-            if (currentSongIndex < (myList.size() - 1)) {
-                playSong((currentSongIndex + 1));
-            } else {
-                playSong(0);
-            }
-        }
+        presenter.doPlayNext(mediaPlayer.getCurrentSongIndex());
     }
 
     public void onBtnPreviuos(View view) {
-        if (isShuffle) {
-            // shuffle is on - play a random song
-            Random rand = new Random();
-            currentSongIndex = rand.nextInt((myList.size() - 1) + 1);
-            playSong(currentSongIndex);
-        } else {
-            if (currentSongIndex > 0) {
-                playSong((currentSongIndex - 1));
-            } else {
-                playSong(myList.size() - 1);
-            }
-        }
+        presenter.doPlayPrevious(mediaPlayer.getCurrentSongIndex());
     }
 
     public void onBtnBackward(View view) {
-        int currentPosition = mediaPlayer.getCurrentPosition();
-        if (currentPosition - seekBackwardTime > 0) {
-            mediaPlayer.seekTo(currentPosition - seekBackwardTime);
-        } else {
-            mediaPlayer.seekTo(0);
-        }
+        int seekBackwardTime = 5000;
+        presenter.doBackward(seekBackwardTime);
     }
 
     @Override
-    public void playFirstSong(ArrayList<HashMap<String, String>> songs) {
-        Utilities.songList = songs;
-        Log.d("ddddddddddd", Utilities.songList.size() + "");
+    public void playFirstSong() {
         this.myList = Utilities.songList;
-        Log.d("dddddddddddddd", Utilities.songList.size() + "");
+        presenter.doPlaySong(110);
+    }
 
-        playSong(100);
+    @Override
+    public void onMediaPlay() {
+        binding.btnPlay.setImageResource(R.drawable.btn_pause);
+
+    }
+
+    @Override
+    public void onMediaPause() {
+        binding.btnPlay.setImageResource(R.drawable.img_btn_play);
     }
 
     @Override
@@ -358,41 +321,52 @@ public class MainActivity extends AppCompatActivity implements MediaPlayer.OnCom
         Toast.makeText(this, "Failed To Play Songs", Toast.LENGTH_SHORT).show();
     }
 
-    public void playSong(int songIndex) {
-        currentSongIndex = songIndex;
-        // Play song
-        try {
-            mediaPlayer.reset();
-            mediaPlayer.setDataSource(myList.get(songIndex).get("songPath"));
-            mediaPlayer.prepare();
-            mediaPlayer.start();
-            // Displaying Song title
-            String songTitle = myList.get(songIndex).get("songTitle");
-            binding.songTitle.setText(songTitle);
+    @Override
+    public void onPlaySong(String songTitle) {
+        binding.songTitle.setText(songTitle);
+        binding.btnPlay.setImageResource(R.drawable.btn_pause);
+        binding.songProgressBar.setProgress(0);
+        binding.songProgressBar.setMax(100);
+        updateProgressBar();
 
-            // Changing Button Image to pause image
-            binding.btnPlay.setImageResource(R.drawable.btn_pause);
+    }
 
-            // set Progress bar values
-            binding.songProgressBar.setProgress(0);
-            binding.songProgressBar.setMax(100);
+    @Override
+    public void failedToPlaySong() {
+        Toast.makeText(this, "Failed to play song", Toast.LENGTH_SHORT).show();
+    }
 
-            // Updating progress bar
-            updateProgressBar();
-        } catch (IllegalArgumentException e) {
-            e.printStackTrace();
-        } catch (IllegalStateException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    @Override
+    public void onRepeatOn() {
+        Toast.makeText(this, "Repeat is ON", Toast.LENGTH_SHORT).show();
+        binding.btnRepeat.setImageResource(R.drawable.btn_repeat_focused);
+        binding.btnShuffle.setImageResource(R.drawable.btn_shuffle);
+    }
+
+    @Override
+    public void onRepeatOff() {
+        Toast.makeText(this, "Repeat is OFF", Toast.LENGTH_SHORT).show();
+        binding.btnRepeat.setImageResource(R.drawable.btn_repeat);
+    }
+
+    @Override
+    public void onShuffleOn() {
+        Toast.makeText(getApplicationContext(), "Shuffle is ON", Toast.LENGTH_SHORT).show();
+        binding.btnShuffle.setImageResource(R.drawable.btn_shuffle_focused);
+        binding.btnRepeat.setImageResource(R.drawable.btn_repeat);
+    }
+
+    @Override
+    public void onShuffleOff() {
+        Toast.makeText(getApplicationContext(), "Shuffle is OFF", Toast.LENGTH_SHORT).show();
+        binding.btnShuffle.setImageResource(R.drawable.btn_shuffle);
     }
 
     /**
      * Update timer on seekbar
      */
     public void updateProgressBar() {
-        handler.postDelayed(mUpdateTimeTask, 100);
+       handler.postDelayed(mUpdateTimeTask, 100);
     }
 
     /**
@@ -421,9 +395,9 @@ public class MainActivity extends AppCompatActivity implements MediaPlayer.OnCom
     @Override
     protected void onDestroy() {
         super.onDestroy();
-            mediaPlayer.release();
+        mediaPlayer.release();
 
-            Intent intent = new Intent(this, MyService.class);
+          /*  Intent intent = new Intent(this, MyService.class);
 
             intent.putExtra("path", myList.get(currentSongIndex).get("songPath"));
             intent.putExtra("current_index", currentSongIndex);
@@ -431,40 +405,19 @@ public class MainActivity extends AppCompatActivity implements MediaPlayer.OnCom
             intent.putExtra("is_shuffle", isShuffle);
             intent.putExtra("is_repeat", isRepeat);
             intent.putExtra("seek_forward_time", seekForwardTime);
-            intent.putExtra("current_position", mediaPlayer.getCurrentPosition());
+            intent.putExtra("current_position", mediaPlayer.getCurrentPosition());*/
 
-          //  startService(intent);
+        //  startService(intent);
 
     }
 
     public void onBtnRepeat(View view) {
-        if (isRepeat) {
-            isRepeat = false;
-            Toast.makeText(this, "Repeat is OFF", Toast.LENGTH_SHORT).show();
-            binding.btnRepeat.setImageResource(R.drawable.btn_repeat);
-        } else {
-            isRepeat = true;
-            Toast.makeText(this, "Repeat is ON", Toast.LENGTH_SHORT).show();
-            binding.btnRepeat.setImageResource(R.drawable.btn_repeat_focused);
-            isShuffle = false;
-            binding.btnShuffle.setImageResource(R.drawable.btn_shuffle);
-        }
+        presenter.doRepeat();
     }
 
     public void onBtnShuffle(View view) {
-        if (isShuffle) {
-            isShuffle = false;
-            Toast.makeText(getApplicationContext(), "Shuffle is OFF", Toast.LENGTH_SHORT).show();
-            binding.btnShuffle.setImageResource(R.drawable.btn_shuffle);
-        } else {
-            // make repeat to true
-            isShuffle = true;
-            Toast.makeText(getApplicationContext(), "Shuffle is ON", Toast.LENGTH_SHORT).show();
-            // make shuffle to false
-            isRepeat = false;
-            binding.btnShuffle.setImageResource(R.drawable.btn_shuffle_focused);
-            binding.btnRepeat.setImageResource(R.drawable.btn_repeat);
-        }
+        presenter.doShuffle();
+
     }
 
 

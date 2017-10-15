@@ -8,7 +8,23 @@ import java.util.HashMap;
  */
 
 public interface PlayerView {
-    void playFirstSong(ArrayList<HashMap<String,String>> songs);
+    void playFirstSong();
+
+    void onMediaPlay();
+
+    void onMediaPause();
 
     void failed();
+
+    void onPlaySong(String songTitle);
+
+    void failedToPlaySong();
+
+    void onRepeatOn();
+
+    void onRepeatOff();
+
+    void onShuffleOn();
+
+    void onShuffleOff();
 }

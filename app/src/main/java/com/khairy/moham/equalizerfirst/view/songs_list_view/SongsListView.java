@@ -6,6 +6,9 @@ package com.khairy.moham.equalizerfirst.view.songs_list_view;
 
 public interface SongsListView extends SongsListBaseView {
 
-  void  onSongsLoadSuccess();
-  void   onSongLoadFailure();
+    void onSongsLoadSuccess();
+
+    void onSongLoadFailure();
+
+    void onItemClickView(int songIndex);
 }

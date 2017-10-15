@@ -25,6 +25,10 @@ public class SongsManager {
      * and store the details in ArrayList
      */
     public void getPlayList() {
+        if(Utilities.songList.size()>1){
+            listener.LoadedSuccessfuly(Utilities.songList);
+            return;
+        }
         File home = new File(MEDIA_PATH);
         if (!home.exists()) {
             listener.loadFailed();

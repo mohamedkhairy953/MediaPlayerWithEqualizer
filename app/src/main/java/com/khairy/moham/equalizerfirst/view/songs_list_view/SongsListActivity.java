@@ -1,5 +1,6 @@
 package com.khairy.moham.equalizerfirst.view.songs_list_view;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -11,6 +12,7 @@ import com.khairy.moham.equalizerfirst.R;
 import com.khairy.moham.equalizerfirst.contractor.SongsListAdapter;
 import com.khairy.moham.equalizerfirst.contractor.PermissionUtils;
 import com.khairy.moham.equalizerfirst.presenter.songs_list.SongsListPresenterImpl;
+import com.khairy.moham.equalizerfirst.view.main_niew.MainActivity;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -44,10 +46,19 @@ public class SongsListActivity extends AppCompatActivity implements SongsListVie
 
     @Override
     public void onSongsLoadSuccess() {
+
     }
 
     @Override
     public void onSongLoadFailure() {
         Toast.makeText(this, "Faiiiiiiiiiled", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onItemClickView(int songIndex) {
+        Intent intent=new Intent(this, MainActivity.class);
+        intent.putExtra("songIndex",songIndex);
+        setResult(100,intent);
+        finish();
     }
 }

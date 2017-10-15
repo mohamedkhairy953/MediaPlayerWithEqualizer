@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.khairy.moham.equalizerfirst.R;
+import com.khairy.moham.equalizerfirst.presenter.songs_list.SongsListPresenter;
 import com.khairy.moham.equalizerfirst.presenter.songs_list.SongsListPresenterImpl;
 import com.khairy.moham.equalizerfirst.view.songs_list_view.PlayListItem_View;
 
@@ -24,16 +25,16 @@ public class SongsListAdapter extends RecyclerView.Adapter<SongsListAdapter.VHol
 
     @Override
     public VHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.playlist_item, parent,false);
-        VHolder vHolder = new VHolder(view);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.playlist_item, parent, false);
+        VHolder vHolder = new VHolder(view,presenter);
 
         return vHolder;
     }
 
     @Override
     public void onBindViewHolder(VHolder holder, int position) {
-        Log.d("fffff",position+"");
-        presenter.onBindView(holder,position);
+        Log.d("fffff", position + "");
+        presenter.onBindView(holder, position);
 
     }
 
@@ -42,17 +43,28 @@ public class SongsListAdapter extends RecyclerView.Adapter<SongsListAdapter.VHol
         return presenter.getListSize();
     }
 
-    public static class VHolder extends RecyclerView.ViewHolder implements PlayListItem_View {
+    public static class VHolder extends RecyclerView.ViewHolder implements PlayListItem_View,View.OnClickListener {
         TextView textView;
-        VHolder(View itemView) {
+        SongsListPresenterImpl presenter;
+
+        VHolder(View itemView, SongsListPresenterImpl presenter) {
+
             super(itemView);
-            textView=itemView.findViewById(R.id.songTitle);
+            this.presenter = presenter;
+            textView = itemView.findViewById(R.id.songTitle);
+            textView.setOnClickListener(this);
         }
 
         @Override
         public void setSongTitle(String title) {
-           textView.setText(title);
+            textView.setText(title);
         }
 
+
+        @Override
+        public void onClick(View view) {
+            int position = getAdapterPosition();
+            presenter.onItemClick(position);
+        }
     }
 }

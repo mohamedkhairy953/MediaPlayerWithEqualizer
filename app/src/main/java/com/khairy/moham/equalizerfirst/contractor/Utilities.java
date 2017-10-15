@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Utilities {
-public static ArrayList<HashMap<String,String>> songList;
+public static ArrayList<HashMap<String,String>> songList=new ArrayList<>();
 
 	/**
 	 * Function to convert milliseconds time to

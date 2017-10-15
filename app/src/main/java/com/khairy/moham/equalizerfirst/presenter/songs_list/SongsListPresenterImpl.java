@@ -12,7 +12,7 @@ import java.util.HashMap;
  * Created by moham on 10/10/2017.
  */
 
- public class SongsListPresenterImpl implements SongsListPresenter, LoadEventListener {
+public class SongsListPresenterImpl implements SongsListPresenter, LoadEventListener {
     private SongsManager songsManager;
     private SongsListView view;
 
@@ -29,6 +29,7 @@ import java.util.HashMap;
     @Override
     public void loadSongs() {
         songsManager.getPlayList();
+
     }
 
     @Override
@@ -45,6 +46,11 @@ import java.util.HashMap;
     @Override
     public void onBindView(PlayListItem_View playListview, int position) {
         playListview.setSongTitle(list.get(position).get("songTitle"));
+    }
+
+    @Override
+    public void onItemClick(int Positon) {
+        view.onItemClickView(Positon);
     }
 
     @Override

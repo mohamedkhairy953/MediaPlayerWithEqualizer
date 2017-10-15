@@ -9,6 +9,6 @@ import com.khairy.moham.equalizerfirst.view.songs_list_view.PlayListItem_View;
 public interface SongsListPresenter {
     void loadSongs();
     void onBindView(PlayListItem_View playListView, int position);
-
+    void onItemClick(int Positon);
     int getListSize();
 }
